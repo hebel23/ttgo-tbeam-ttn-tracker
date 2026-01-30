@@ -25,14 +25,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "OLEDDisplay.h"
 #include "images.h"
 #include "fonts.h"
+#include "configuration.h"
 
 #define SCREEN_HEADER_HEIGHT    14
 
 SSD1306Wire * display;
 uint8_t _screen_line = SCREEN_HEADER_HEIGHT - 1;
 
-void _screen_header() {
-    if(!display) return;
+void _screen_header() 
+{
+    if(!display) 
+    {
+        return;
+    }
 
     char buffer[20];
 
@@ -41,14 +46,22 @@ void _screen_header() {
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->drawString(0, 2, buffer);
 
+    #ifdef T_BEAM_V10
     // Datetime (if the axp192 PMIC is present, alternate between powerstats and time)
-    if(axp192_found && millis()%8000 < 3000){
+    if(axp192_found && millis()%8000 < 3000)
+    {
         snprintf(buffer, sizeof(buffer), "%.1fV %.0fmA", axp.getBattVoltage()/1000, axp.getBattChargeCurrent() - axp.getBattDischargeCurrent());
-
-    } else {
+    } 
+    else 
+    {
         gps_time(buffer, sizeof(buffer));
     }
-    
+    #endif
+
+    #ifdef T_BEAM_V12
+        snprintf(buffer, sizeof(buffer), "%.1f%", power_getBatteryLevel());  
+    #endif
+
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->drawString(display->getWidth()/2, 2, buffer);
 
@@ -58,7 +71,8 @@ void _screen_header() {
     display->drawXbm(display->getWidth() - SATELLITE_IMAGE_WIDTH, 0, SATELLITE_IMAGE_WIDTH, SATELLITE_IMAGE_HEIGHT, SATELLITE_IMAGE);
 }
 
-void screen_show_logo() {
+void screen_show_logo() 
+{
     if(!display) return;
 
     uint8_t x = (display->getWidth() - TTN_IMAGE_WIDTH) / 2;
@@ -66,50 +80,70 @@ void screen_show_logo() {
     display->drawXbm(x, y, TTN_IMAGE_WIDTH, TTN_IMAGE_HEIGHT, TTN_IMAGE);
 }
 
-void screen_off() {
-    if(!display) return;
+void screen_off() 
+{
+    if(!display) 
+    {
+        return;
+    }
 
     display->displayOff();
 }
 
-void screen_on() {
-    if (!display) return;
+void screen_on() 
+{
+    if(!display) 
+    {
+        return;
+    }
 
     display->displayOn();
 }
 
-void screen_clear() {
-    if(!display) return;
-
+void screen_clear() 
+{
+    if(!display) 
+    {
+        return;
+    }
     display->clear();
 }
 
-void screen_print(const char * text, uint8_t x, uint8_t y, uint8_t alignment) {
+void screen_print(const char * text, uint8_t x, uint8_t y, uint8_t alignment) 
+{
     DEBUG_MSG(text);
 
-    if(!display) return;
+    if(!display) 
+    {
+        return;
+    }
 
     display->setTextAlignment((OLEDDISPLAY_TEXT_ALIGNMENT) alignment);
     display->drawString(x, y, text);
 }
 
-void screen_print(const char * text, uint8_t x, uint8_t y) {
+void screen_print(const char * text, uint8_t x, uint8_t y) 
+{
     screen_print(text, x, y, TEXT_ALIGN_LEFT);
 }
 
-void screen_print(const char * text) {
-    Serial.printf("Screen: %s\n", text);
+void screen_print(const char * text) 
+{
     if(!display) return;
 
-    display->print(text);
-    if (_screen_line + 8 > display->getHeight()) {
-        // scroll
+    // Draw the string at the current line
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->drawString(0, _screen_line, text);
+    if (_screen_line + 8 > display->getHeight()) 
+    {
+        // scroll (optional: implement scrolling if needed)
     }
     _screen_line += 8;
     screen_loop();
 }
 
-void screen_update() {
+void screen_update() 
+{
     if (display) display->display();
 }
 
@@ -119,13 +153,14 @@ void screen_setup() {
     display->init();
     display->flipScreenVertically();
     display->setFont(Custom_ArialMT_Plain_10);
-
-    // Scroll buffer
-    display->setLogBuffer(5, 30);
 }
 
-void screen_loop() {
-    if (!display) return;
+void screen_loop() 
+{
+    if (!display) 
+    {
+        return;
+    }
 
     #ifdef T_BEAM_V10
     if (axp192_found && pmu_irq) {
@@ -139,14 +174,17 @@ void screen_loop() {
         if (axp.isVbusRemoveIRQ()) {
             baChStatus = "No Charging";
         }
-        Serial.println(baChStatus); //Prints charging status to screen
+        Serial.println(baChStatus);
         digitalWrite(2, !digitalRead(2));
         axp.clearIRQ();
     }
     #endif
 
+    #ifdef T_BEAM_V12
+    
+    #endif
+
     display->clear();
     _screen_header();
-    display->drawLogBuffer(0, SCREEN_HEADER_HEIGHT);
     display->display();
 }

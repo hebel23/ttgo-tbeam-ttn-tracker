@@ -41,7 +41,8 @@ void ttn_register(void (*callback)(uint8_t message));
 
 // Select which T-Beam board is being used. Only uncomment one.
 // #define T_BEAM_V07  // AKA Rev0 (first board released)
-#define T_BEAM_V10  // AKA Rev1 (second board released)
+// #define T_BEAM_V10  // AKA Rev1 (second board released)
+#define T_BEAM_V12     // AKA Rev1.2 (with AXP2101 PMU)
 
 // Select the payload format. Change on TTN as well. Only uncomment one.
 #define PAYLOAD_USE_FULL
@@ -105,7 +106,7 @@ void ttn_register(void (*callback)(uint8_t message));
 #if defined(T_BEAM_V07)
 #define LED_PIN         14
 #define BUTTON_PIN      39
-#elif defined(T_BEAM_V10)
+#elif defined(T_BEAM_V10) || defined (T_BEAM_V12)
 #define BUTTON_PIN      38
 #endif
 
@@ -126,7 +127,7 @@ void ttn_register(void (*callback)(uint8_t message));
 #if defined(T_BEAM_V07)
 #define GPS_RX_PIN      12
 #define GPS_TX_PIN      15
-#elif defined(T_BEAM_V10)
+#elif defined(T_BEAM_V10) || defined(T_BEAM_V12)
 #define GPS_RX_PIN      34
 #define GPS_TX_PIN      12
 #endif
@@ -139,7 +140,7 @@ void ttn_register(void (*callback)(uint8_t message));
 #define MISO_GPIO       19
 #define MOSI_GPIO       27
 #define NSS_GPIO        18
-#if defined(T_BEAM_V10)
+#if defined(T_BEAM_V10) || defined(T_BEAM_V12)
 #define RESET_GPIO      14
 #else
 #define RESET_GPIO      23
@@ -147,6 +148,8 @@ void ttn_register(void (*callback)(uint8_t message));
 #define DIO0_GPIO       26
 #define DIO1_GPIO       33 // Note: not really used on this board
 #define DIO2_GPIO       32 // Note: not really used on this board
+
+#ifdef T_BEAM_V10
 
 // -----------------------------------------------------------------------------
 // AXP192 (Rev1-specific options)
@@ -156,3 +159,27 @@ void ttn_register(void (*callback)(uint8_t message));
 #define GPS_POWER_CTRL_CH     3
 #define LORA_POWER_CTRL_CH    2
 #define PMU_IRQ               35
+
+#endif
+
+#ifdef T_BEAM_V12
+
+// -----------------------------------------------------------------------------
+// AXP2101 (Rev1.2-specific options)
+// -----------------------------------------------------------------------------
+
+#define XPOWERS_CHIP_AXP2101
+
+#ifndef CONFIG_PMU_SDA
+#define CONFIG_PMU_SDA 21
+#endif
+
+#ifndef CONFIG_PMU_SCL
+#define CONFIG_PMU_SCL 22
+#endif
+
+#ifndef CONFIG_PMU_IRQ
+#define CONFIG_PMU_IRQ 35
+#endif
+
+#endif
