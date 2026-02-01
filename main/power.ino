@@ -569,10 +569,30 @@ void power_loop()
     }
 }
 
-float power_getBatteryLevel()
+int power_getBatteryLevel()
 {
-    return power.getBatteryPercent();
-  
+    return (int)power.getBatteryPercent();
+}
+
+const char* power_getChargerStatus()
+{
+    switch(power.getChargerStatus())
+    {
+        case XPOWERS_AXP2101_CHG_TRI_STATE:
+            return "";
+        case XPOWERS_AXP2101_CHG_PRE_STATE:
+            return "";
+        case XPOWERS_AXP2101_CHG_CC_STATE:
+            return ">";
+        case XPOWERS_AXP2101_CHG_CV_STATE:
+            return ">";
+        case XPOWERS_AXP2101_CHG_DONE_STATE:
+            return "";
+        case XPOWERS_AXP2101_CHG_STOP_STATE:
+            return "";
+        default:
+            return "unknown";
+    }
 }
 
 #endif

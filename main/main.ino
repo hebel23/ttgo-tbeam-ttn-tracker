@@ -317,6 +317,7 @@ void setup()
     }
     else 
     {
+        screen_print("Joining TTN\n");
         ttn_register(callback);
         ttn_join();
         ttn_adr(LORAWAN_ADR);
@@ -345,6 +346,7 @@ void loop()
         {
             // just started a new press
             Serial.println("pressing");
+            screen_print("Button pressed\n");
             wasPressed = true;
             minPressMs = millis() + 3000;
         }
